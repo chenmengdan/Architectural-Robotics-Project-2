@@ -1,7 +1,6 @@
 #include <Wire.h>//lib for I2C.
 #include "rgb_lcd.h"//Lib for the LCD screen.
 rgb_lcd lcd;
-
 #include "IRremote.h" //lib for the controller
 int receiver = 11; //signal Pin of IR receiver
 const int lightPIN=2;
@@ -15,8 +14,6 @@ void setup() {
   Serial.begin(9600);
   Serial.println("IR Receiver Button Decode");
   irrecv.enableIRIn();//Start the receiver
-//******************SET UP OF THE LCD SCREEN****************************//
-
 }
 
 void loop() {
@@ -50,9 +47,20 @@ void translateIR() // takes action based on IR code received
         Serial.println(" 2");
         digitalWrite(lightPIN,LOW);break;
       case 16769565: 
-        Serial.println(" 3");    break;
+        Serial.println(" 3");
+        //******************SET UP OF THE LCD SCREEN****************************//
+        lcd.begin(16, 2);   
+        lcd.setCursor(0, 0);// Print a message to the lcd.
+        lcd.print("Child is Calling! ");
+        lcd.setRGB(254,0,0);       
+        break;
       case 16720605: 
-        Serial.println(" 4");    break;
+        Serial.println(" 4");
+        lcd.begin(16, 2);   
+        lcd.setCursor(0, 0);// Print a message to the lcd.
+        lcd.print("Open the Light ");
+        lcd.setRGB(254,150,0);
+        break;
       case 16712445: 
         Serial.println(" 5");    break;
       case 16761405: 
@@ -79,3 +87,6 @@ void translateIR() // takes action based on IR code received
   delay(500); // Do not get immediate repeat
 
 }
+/*********************************************************************************************************
+  END FILE
+*********************************************************************************************************/
