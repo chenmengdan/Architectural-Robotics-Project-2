@@ -22,6 +22,7 @@ int receiver = 11;
 IRrecv irrecv(receiver);
 decode_results results;
 int pressedNumber = 0;
+int count = 0;
 
 bool room1 = false;
 bool room2 = false;
@@ -43,24 +44,33 @@ void loop() {
       irrecv.resume();//receive the next value
     }
     int touchSensorValue = digitalRead(TouchPin);
-    if(touchSensorValue == 1)
+    if(pressedNumber == 1)
     {
-        if(pressedNumber == 1){
-            vibrateActivate();
+        if(touchSensorValue == 1)
+        {
+          vibrateActivate();
+        }
+        else
+        {
+          lightAlertActivate();
         }
     }
 }
 void vibrateActivate(){
+   for(count = 0; count < 10; count+=1 ){
     digitalWrite(vibrator,HIGH);
     delay(1000);
     digitalWrite(vibrator,LOW);
     delay(1000);
+   }    
 }
 void lightAlertActivate(){
+   for(count = 0; count < 10; count+=1 ){
     digitalWrite(ledPin,HIGH);
     delay(500);
     digitalWrite(ledPin,LOW);
     delay(500); 
+   }
 }
 void translateIR() // takes action based on IR code received
 {
