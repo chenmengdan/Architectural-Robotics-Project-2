@@ -37,10 +37,6 @@ void setup() {
 }
 
 void loop() {
-    digitalWrite(ledPin,HIGH);
-    delay(1000);
-    digitalWrite(ledPin,LOW);
-    delay(1000); 
     if (irrecv.decode(&results))// have we received an IR signal?
     {
       translateIR();
