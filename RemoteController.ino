@@ -89,7 +89,7 @@ void loop() {
     translateIR();
     irrecv.resume();//receive the next value
   }
-  Serial.println(pressedNumber);
+    // Child calling for help
     if(pressedNumber == 1)
     {
       //Check if parents are in bed
@@ -98,8 +98,19 @@ void loop() {
       }
       digitalWrite(vibrator,LOW);
       // if parents are not in bed
-      /*\
-      if(
+      /*
+      if( in kitchen )
+      {
+        activate light 1
+      }
+      else if( in living room )
+      {
+        activate light 2
+      }
+      else if( in bathroom )
+      {
+        activate light 3 
+      }
       */
       lightAlertActivate();
     }
