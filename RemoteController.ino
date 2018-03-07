@@ -1,5 +1,7 @@
 #include <Wire.h>//lib for I2C.
 #include "rgb_lcd.h"//Lib for the LCD screen.
+#include <SPI.h>
+#include <MFRC522.h>
 rgb_lcd lcd;
 #include "IRremote.h" //lib for the controller
 #define TouchPin 8 //                           [8]
@@ -7,6 +9,10 @@ rgb_lcd lcd;
 #define vibrator 9  //                          [9]
 int receiver = 11; //signal Pin of IR receiver  [11]
 const int lightPIN=2; //                        [2]
+
+#define SS_PIN 10
+#define RST_PIN 12
+MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 
 IRrecv irrecv(receiver);
 decode_results results;
@@ -26,35 +32,73 @@ void setup() {
   pinMode(ledPin,OUTPUT);
   pinMode(TouchPin, INPUT);
   
+  SPI.begin();      // Initiate  SPI bus
+  mfrc522.PCD_Init();   // Initiate MFRC522
+  Serial.println("Approximate your card to the reader...");
+  Serial.println();
+  
   Serial.println("IR Receiver Button Decode");
   irrecv.enableIRIn();//Start the receiver
 }
 
 void loop() {
+//   // Look for new cards
+//  if ( ! mfrc522.PICC_IsNewCardPresent())
+//  {
+//    return;
+//  }
+//  // Select one of the cards
+//  if ( ! mfrc522.PICC_ReadCardSerial())
+//  {
+//    return;
+//  }
+//  //Show UID on serial monitor
+//  Serial.print("UID tag :");
+//  String content= "";
+//  byte letter;
+//  for (byte i = 0; i < mfrc522.uid.size; i++)
+//  {
+//     Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
+//     Serial.print(mfrc522.uid.uidByte[i], HEX);
+//     content.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
+//     content.concat(String(mfrc522.uid.uidByte[i], HEX));
+//  }
+//  Serial.println();
+//  Serial.print("Message : ");
+//  content.toUpperCase();
+//  if (content.substring(1) == "06 D4 37 07") //Child
+//  {
+//    Serial.println("Child");
+//    Serial.println();
+//    delay(1000);
+//  }
+// 
+//  else if (content.substring(1) == "D1 96 AF 85") {
+//    Serial.println("Parent");
+//    delay(1000);
+//  }
+// 
+//  else   {
+//  Serial.println("Someone else");
+//  delay(1000);
+//  }
+//  
+  //***********************************************//
   if (irrecv.decode(&results))// have we received an IR signal?
   {
     translateIR();
     irrecv.resume();//receive the next value
   }
-  int touchSensorValue = digitalRead(TouchPin);
   Serial.println(pressedNumber);
     if(pressedNumber == 1)
     {
-//      while(touchSensorValue == 1){ //check for RFID flag
-//        vibrateActivate();
-//        if(touchSensorValue != 1){
-//          break;
-//        }
-//      }
-      
-        if(touchSensorValue == 1)
-        {
-          vibrateActivate();
-        }
-        else
-        {
-          lightAlertActivate();
-        }
+      while(digitalRead(TouchPin))
+      {
+        vibrateActivate();
+      } 
+       //lightAlertActivate();
+       Serial.print("**********");
+       Serial.println(digitalRead(TouchPin));
     }
 }
 
@@ -67,6 +111,10 @@ void translateIR() // takes action based on IR code received
          case 16753245: 
         Serial.println("1");
         pressedNumber = 1;
+        lcd.begin(16, 2);   
+        lcd.setCursor(0, 0);// Print a message to the lcd.
+        lcd.print("Child is Calling! ");
+        lcd.setRGB(254,0,0);   
         digitalWrite(lightPIN,HIGH);break;
         break;
       case 16736925: 
@@ -133,27 +181,24 @@ void translateIR() // takes action based on IR code received
  
     }// End Case
 
-  delay(500); // Do not get immediate repeat
+  delay(50); // Do not get immediate repeat
 
 }
 
 void vibrateActivate(){
-   for(count = 0; count < 2; count+=1 ){
     digitalWrite(vibrator,HIGH);
-    delay(1000);
+    digitalWrite(ledPin,HIGH);
+    delay(500);
     digitalWrite(vibrator,LOW);
-    delay(1000);
-   }    
-
+    digitalWrite(ledPin,LOW);
+    delay(500); 
 }
 
 void lightAlertActivate(){
-   for(count = 0; count < 2; count+=1 ){
     digitalWrite(ledPin,HIGH);
     delay(500);
     digitalWrite(ledPin,LOW);
     delay(500); 
-   }
 }
 /*********************************************************************************************************
   END FILE
