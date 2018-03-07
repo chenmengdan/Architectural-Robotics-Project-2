@@ -92,13 +92,16 @@ void loop() {
   Serial.println(pressedNumber);
     if(pressedNumber == 1)
     {
-      while(digitalRead(TouchPin))
-      {
-        vibrateActivate();
-      } 
-       //lightAlertActivate();
-       Serial.print("**********");
-       Serial.println(digitalRead(TouchPin));
+      //Check if parents are in bed
+      while(digitalRead(TouchPin)){
+        digitalWrite(vibrator,HIGH);
+      }
+      digitalWrite(vibrator,LOW);
+      // if parents are not in bed
+      /*\
+      if(
+      */
+      lightAlertActivate();
     }
 }
 
