@@ -84,7 +84,7 @@ void loop() {
 //  }
 //  
   //***********************************************//
-  if (irrecv.decode(&results))// have we received an IR signal?
+ if (irrecv.decode(&results))// have we received an IR signal?
   {
     translateIR();
     irrecv.resume();//receive the next value
@@ -97,22 +97,33 @@ void loop() {
         digitalWrite(vibrator,HIGH);
       }
       digitalWrite(vibrator,LOW);
-      // if parents are not in bed
+
+     
       /*
+       * if parents are not in bed
+       * 
       if( in kitchen )
       {
+        digitalWrite(buzzer,HIGH);
         activate light 1
       }
       else if( in living room )
       {
+        digitalWrite(buzzer,HIGH);
         activate light 2
       }
       else if( in bathroom )
       {
+        digitalWrite(buzzer,HIGH);
         activate light 3 
       }
+      else if( in bedroom )
+      {
+        digitalWrite(buzzer,HIGH);
+        activate light 4
+      }
       */
-      lightAlertActivate();
+      //lightAlertActivate();
     }
 }
 
