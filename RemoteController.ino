@@ -7,6 +7,8 @@ rgb_lcd lcd;
 #define TouchPin 8 //                           [8]
 #define ledPin 13 //                            [13]
 #define vibrator 9  //                          [9]
+#define buzzer 5
+
 int receiver = 11; //signal Pin of IR receiver  [11]
 const int lightPIN=2; //                        [2]
 
@@ -30,6 +32,7 @@ void setup() {
   pinMode(lightPIN,OUTPUT);
   pinMode(vibrator,OUTPUT);
   pinMode(ledPin,OUTPUT);
+  pinMode(buzzer,OUTPUT);
   pinMode(TouchPin, INPUT);
   
   SPI.begin();      // Initiate  SPI bus
@@ -84,7 +87,7 @@ void loop() {
 //  }
 //  
   //***********************************************//
- if (irrecv.decode(&results))// have we received an IR signal?
+  if (irrecv.decode(&results))// have we received an IR signal?
   {
     translateIR();
     irrecv.resume();//receive the next value
