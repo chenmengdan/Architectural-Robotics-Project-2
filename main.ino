@@ -7,7 +7,7 @@
 #include <Stepper.h>
 
 /* ****************** WINDOW SHADE PART ******************************** */
-Stepper stepper(STEPS,15,16,17,18);  
+//Stepper stepper(STEPS,15,16,17,18);  
 const int thresholdvalue = 120;         //The treshold for which the LED should turn on. Setting it lower will make it go on at more light, higher for more darkness
 
 #define LIGHT_SENSOR A0                 //Grove - Light Sensor is connected to A0 of Arduino
@@ -26,6 +26,10 @@ rgb_lcd lcd;
 
 int receiver = 11; //signal Pin of IR receiver  [11]
 const int lightPIN=2; //                        [2]
+const int RED=13; //                        [2]
+const int BLUE=14; //                        [2]
+const int WRITE=15
+
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 MFRC522 mfrc522_2(SS_PIN_2, RST_PIN_2);  // Create MFRC522 instance
@@ -56,6 +60,10 @@ volatile bool toggle = true; // true -> to close // false -> to open
 void setup() {
   Serial.begin(9600);
   pinMode(lightPIN,OUTPUT);
+  pinMode(RED,OUTPUT);
+  pinMode(BLUE,OUTPUT);
+  pinMode(WRITE,OUTPUT);
+
   pinMode(vibrator,OUTPUT);
   pinMode(ledPin,OUTPUT);
   pinMode(buzzer,OUTPUT);
@@ -67,7 +75,7 @@ void setup() {
 //  pinMode(AUTO_MODE_PIN, INPUT); // initialize the pushbutton pin as an input
 //  attachInterrupt(digitalPinToInterrupt(receiver), manualButtonController, RISING);
 //  attachInterrupt(digitalPinToInterrupt(receiver), lightSensorMode, RISING);
-  attachInterrupt(0,translateIR,CHANGE);
+  //attachInterrupt(0,translateIR,CHANGE);
   stepper.setSpeed(15);
 /* ********************************************************************** */
 
@@ -94,29 +102,26 @@ void loop() {
     {
         if(IS_PARENT_IN_KITCHEN == true)
         {
-            buzzerLEDActivate();
+            //buzzerLEDActivate();
+            digitalWrite(RED,HIGH);
         }
         else if(IS_PARENT_IN_BATHROOM == true)
         {
-            buzzerLEDActivate();
-            lcd.setRGB(255,255,255);
+            //buzzerLEDActivate();
+            //lcd.setRGB(255,255,255);
+            digitalWrite(BLUE,HIGH);
         }
         else // PARENT IN THE BED ROOM
         {
-            if(digitalRead(TouchPin) == 1) 
-            {
-              Serial.println("In Bed -> Vibrate, buzzer, LED");
-              Serial.println();
-              vibrateBuzzerLEDActivate(); 
-            }
+//            if(digitalRead(TouchPin) == 1) 
+//            {
+//              Serial.println("In Bed -> Vibrate, buzzer, LED");
+//              Serial.println();
+//              vibrateBuzzerLEDActivate(); 
+//            }
+            digitalWrite(BLUE,HIGH);
         } 
         pressedNumber = 0;
-    }
-
-
-
-      
-      
     }
     
 
@@ -124,32 +129,32 @@ void loop() {
 /* ************************** WINDOW SHADE PART  ****************************** */
 //    buttonValueOfMannaul = digitalRead(MANUAL_PIN);
 //    buttonValueOfAuto = digitalRead(auto_button);
-    Serial.print("Mode: ");
-    Serial.print(mode);  
-    Serial.println();
-    Serial.println(analogRead(LIGHT_SENSOR));
-    /* Mannaul Button is pressed, meaaning toggle between open and close */
-   
-    if(mode == 1){ // mode = 1 -> using pushbutton
-      if(mode == 1 && toggle == false && windowState == 0){ // push to open window
-      Serial.println("open!!!!!!!!!!!!!!!!!!");
-      open_shade();
-    }
-      if(mode == 1 && toggle == true && windowState == 1){ // push to close window
-        Serial.println("close-----------------");
-        close_shade();
-      }
-    }
-    else{ // mode = 0 -> using light sensor
-      if(mode == 0 && analogRead(LIGHT_SENSOR) < thresholdvalue && windowState == 0 ){ // no light -> open window
-      Serial.println("open!!!!!!!!!!!!!!!!!!");
-      open_shade();
-      }
-      if(mode == 0 && analogRead(LIGHT_SENSOR) >= thresholdvalue && windowState == 1){ // light -> close window
-      Serial.println("close-----------------");
-      close_shade();
-      }
-    }
+//    Serial.print("Mode: ");
+//    Serial.print(mode);  
+//    Serial.println();
+//    Serial.println(analogRead(LIGHT_SENSOR));
+//    /* Mannaul Button is pressed, meaaning toggle between open and close */
+//   
+//    if(mode == 1){ // mode = 1 -> using pushbutton
+//      if(mode == 1 && toggle == false && windowState == 0){ // push to open window
+//      Serial.println("open!!!!!!!!!!!!!!!!!!");
+//      open_shade();
+//    }
+//      if(mode == 1 && toggle == true && windowState == 1){ // push to close window
+//        Serial.println("close-----------------");
+//        close_shade();
+//      }
+//    }
+//    else{ // mode = 0 -> using light sensor
+//      if(mode == 0 && analogRead(LIGHT_SENSOR) < thresholdvalue && windowState == 0 ){ // no light -> open window
+//      Serial.println("open!!!!!!!!!!!!!!!!!!");
+//      open_shade();
+//      }
+//      if(mode == 0 && analogRead(LIGHT_SENSOR) >= thresholdvalue && windowState == 1){ // light -> close window
+//      Serial.println("close-----------------");
+//      close_shade();
+//      }
+//    }
 /* ****************************************************************************** */
 
 
@@ -261,7 +266,7 @@ void checkLocation(){
           if (content.substring(1) == "06 D4 37 07") //Child
           { 
               Serial.println("Child");
-              IS_CHILD_IN_KITCHEN = !IS_CHILD_IN_KITCHEN;
+              IS_CHILD_IN_KITCHEN = !IS_CHILD_IN_KITCHEN; // true when a child walk in the kitchen
              
               if (IS_CHILD_IN_KITCHEN == true)
               {
@@ -324,8 +329,6 @@ void checkLocation(){
     
    /* ****************************** RFID AT BATHROOM ******************************** */
        if (mfrc522_2.PICC_IsNewCardPresent() && mfrc522_2.PICC_ReadCardSerial()){
-        
-         
           if (content2.substring(1) == "06 D4 37 07") //Child
           {
             Serial.println("Child");
@@ -346,7 +349,7 @@ void checkLocation(){
               lcd.print("CHILD IS NOT IN THE BATHROOM NOW!!!");
               lcd.setRGB(254,0,0);
             }
-            delay(1000);
+            delay(500);
           }
           
           else if (content2.substring(1) == "D1 96 AF 85") //Parent
