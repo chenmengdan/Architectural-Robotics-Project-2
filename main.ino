@@ -21,10 +21,10 @@
 #define SS_PIN_2        49         // Configurable, see typical pin layout above
 
 /* ****************** WINDOW SHADE PART ******************************** */
-//#define LIGHT_SENSOR A0                 //Grove - Light Sensor is connected to A0 of Arduino
-//#define STEPS 2038
-//Stepper stepper(STEPS,15,17,16,18);  
-//const int thresholdvalue = 120;         //The treshold for which the LED should turn on. Setting it lower will make it go on at more light, higher for more darkness
+#define LIGHT_SENSOR A0                 //Grove - Light Sensor is connected to A0 of Arduino
+#define STEPS 2038
+Stepper stepper(STEPS,38,40,39,41);  
+const int thresholdvalue = 120;         //The treshold for which the LED should turn on. Setting it lower will make it go on at more light, higher for more darkness
 /* ********************************************************************** */
 
 rgb_lcd lcd;
@@ -53,9 +53,9 @@ bool IS_PARENT_IN_BATHROOM = false;
 
 /* ****************** WINDOW SHADE PART ******************************** */
 int numberOfStep = 0;
-volatile int mode = 0; // mode 0 -> light sensor // mode 1 -> manual button
-volatile int windowState = 1; // window state 0 -> closed // window state 1 -> open
-volatile bool toggle = true; // true -> to close // false -> to open 
+int mode = 0; // mode 0 -> light sensor // mode 1 -> manual button
+int windowState = 1; // window state 0 -> closed // window state 1 -> open
+bool toggle = true; // true -> to close // false -> to open 
 /* ********************************************************************** */
 
 void setup() {
@@ -71,14 +71,8 @@ void setup() {
   pinMode(TouchPin, INPUT);
 
 /* ****************** WINDOW SHADE PART ******************************** */
-//  pinMode(LED_PIN,OUTPUT);            //Set the LED on Digital 12 as an OUTPUT
-//  pinMode(MANUAL_PIN, INPUT);  // initialize the pushbutton pin as an input
-//  pinMode(AUTO_MODE_PIN, INPUT); // initialize the pushbutton pin as an input
-//  attachInterrupt(digitalPinToInterrupt(receiver), manualButtonController, RISING);
-//  attachInterrupt(digitalPinToInterrupt(receiver), lightSensorMode, RISING);
   //attachInterrupt(0,translateIR,CHANGE);
-  
-  //stepper.setSpeed(15);
+  stepper.setSpeed(15);
 /* ********************************************************************** */
 
   while (!Serial);    // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
@@ -127,37 +121,35 @@ void loop() {
         pressedNumber = 0;
     }
     
-
-  
 /* ************************** WINDOW SHADE PART  ****************************** */
-//    buttonValueOfMannaul = digitalRead(MANUAL_PIN);
-//    buttonValueOfAuto = digitalRead(auto_button);
-//    Serial.print("Mode: ");
-//    Serial.print(mode);  
-//    Serial.println();
-//    Serial.println(analogRead(LIGHT_SENSOR));
-//    /* Mannaul Button is pressed, meaaning toggle between open and close */
-//   
-//    if(mode == 1){ // mode = 1 -> using pushbutton
-//      if(mode == 1 && toggle == false && windowState == 0){ // push to open window
-//      Serial.println("open!!!!!!!!!!!!!!!!!!");
-//      open_shade();
-//    }
-//      if(mode == 1 && toggle == true && windowState == 1){ // push to close window
-//        Serial.println("close-----------------");
-//        close_shade();
-//      }
-//    }
-//    else{ // mode = 0 -> using light sensor
-//      if(mode == 0 && analogRead(LIGHT_SENSOR) < thresholdvalue && windowState == 0 ){ // no light -> open window
-//      Serial.println("open!!!!!!!!!!!!!!!!!!");
-//      open_shade();
-//      }
-//      if(mode == 0 && analogRead(LIGHT_SENSOR) >= thresholdvalue && windowState == 1){ // light -> close window
-//      Serial.println("close-----------------");
-//      close_shade();
-//      }
-//    }
+    else if(pressedNumber == 3 || pressedNumber == 4)
+    {
+       if( mode == 1)
+       { // mode = 1 -> using pushbutton
+          if(mode == 1 && toggle == false && windowState == 0)
+          { // push to open window
+            Serial.println("open!!!!!!!!!!!!!!!!!!");
+            open_shade();
+          }
+          if(mode == 1 && toggle == true && windowState == 1)
+          { // push to close window
+            Serial.println("close-----------------");
+            close_shade();
+          }
+        }
+       else{ // mode = 0 -> using light sensor
+          if(mode == 0 && analogRead(LIGHT_SENSOR) < thresholdvalue && windowState == 0 )// no light -> open window
+          { 
+             Serial.println("open!!!!!!!!!!!!!!!!!!");
+             open_shade();
+          }
+          if(mode == 0 && analogRead(LIGHT_SENSOR) >= thresholdvalue && windowState == 1)// light -> close window
+          { 
+             Serial.println("close-----------------");
+             close_shade();
+          }
+       }
+    }
 /* ****************************************************************************** */
 
 
@@ -194,7 +186,8 @@ void translateIR() {// takes action based on IR code received
         lcd.setCursor(1, 0);// Print a message to the lcd.
         lcd.print("Manual Mode Window");
         lcd.setRGB(66,244,104);
-        //manualButtonController();
+        mode = 1; // change to manual mode
+        toggle = !toggle;
         break;
       case 16720605:
         Serial.println("4");
@@ -203,7 +196,7 @@ void translateIR() {// takes action based on IR code received
         lcd.setCursor(0, 0);// Print a message to the lcd.
         lcd.print("Auto Mode Window");
         lcd.setRGB(176,66,244);
-        //lightSensorMode();
+        mode = 0;
         break;
 //      case 16712445:
 //        Serial.println("5");
@@ -452,40 +445,27 @@ void vibrateBuzzerLEDActivate() {
 }
 
 ///* ***************** WINDOW SHADE PART ************************************************* */
-//void lightSensorMode(){
-//    mode = 0;
-//}
-//void manualButtonController(){
-//    mode = 1; // change to manual mode
-//    toggle = !toggle;
-//}
-//void open_shade(){
-//    digitalWrite(LED_PIN,HIGH);
-//    while(numberOfStep < 3000){
-//        stepper.step(1);
-//        numberOfStep++;       
-//        if( (mode == 1 && toggle == true) || (mode == 0 && analogRead(LIGHT_SENSOR) > thresholdvalue) ){
-//           break;
-//        }
-//    }
-//    digitalWrite(LED_PIN,LOW);
-//    windowState = 1; // 
-//}
-//
-//void close_shade(){
-//    digitalWrite(LED_PIN,HIGH);
-//    while(numberOfStep > 0){
-//        stepper.step(-1);
-//        numberOfStep--;
-//         if( (mode == 1 && toggle == false) || (mode == 0 && analogRead(LIGHT_SENSOR) < thresholdvalue)){
-//           break;
-//        }
-//    }
-//    digitalWrite(LED_PIN,LOW);
-//    windowState = 0;
-//}
+void open_shade(){
+    while(numberOfStep < 3000){
+      stepper.step(1);
+      numberOfStep++;       
+      if( (mode == 1 && toggle == true) || (mode == 0 && analogRead(LIGHT_SENSOR) > thresholdvalue) ){
+         break;
+      }
+    }
+    windowState = 1; // 
+}
+
+void close_shade(){
+    while(numberOfStep > 0){
+      stepper.step(-1);
+      numberOfStep--;
+       if( (mode == 1 && toggle == false) || (mode == 0 && analogRead(LIGHT_SENSOR) < thresholdvalue)){
+         break;
+      }
+    }
+    windowState = 0;
+}
 /*********************************************************************************************************
-
   END FILE
-
 *********************************************************************************************************/
