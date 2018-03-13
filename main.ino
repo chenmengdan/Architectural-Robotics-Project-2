@@ -6,30 +6,31 @@
 #include "IRremote.h" //lib for the controller
 #include <Stepper.h>
 
-/* ****************** WINDOW SHADE PART ******************************** */
-//Stepper stepper(STEPS,15,16,17,18);  
-const int thresholdvalue = 120;         //The treshold for which the LED should turn on. Setting it lower will make it go on at more light, higher for more darkness
-
-#define LIGHT_SENSOR A0                 //Grove - Light Sensor is connected to A0 of Arduino
-#define STEPS 2038
-/* ********************************************************************** */
-
 #define TouchPin 8 //                           [8]
-#define ledPin 13 //                            [13]
-#define vibrator 9  //                          [9]
+
+#define ledPinBed 30
+#define ledPinLiv 31 
+#define ledPinKit 32 
+#define ledPinBath 33 
+
+#define vibrator 9
 #define buzzer 5
 #define RST_PIN         3          // Configurable, see typical pin layout above
 #define SS_PIN          53         // Configurable, see typical pin layout above
-#define RST_PIN_2         7          // Configurable, see typical pin layout above
-#define SS_PIN_2          49         // Configurable, see typical pin layout above
+#define RST_PIN_2       7          // Configurable, see typical pin layout above
+#define SS_PIN_2        49         // Configurable, see typical pin layout above
+
+/* ****************** WINDOW SHADE PART ******************************** */
+//#define LIGHT_SENSOR A0                 //Grove - Light Sensor is connected to A0 of Arduino
+//#define STEPS 2038
+//Stepper stepper(STEPS,15,17,16,18);  
+//const int thresholdvalue = 120;         //The treshold for which the LED should turn on. Setting it lower will make it go on at more light, higher for more darkness
+/* ********************************************************************** */
+
 rgb_lcd lcd;
 
 int receiver = 11; //signal Pin of IR receiver  [11]
 const int lightPIN=2; //                        [2]
-const int RED=13; //                        [2]
-const int BLUE=14; //                        [2]
-const int WRITE=15
-
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 MFRC522 mfrc522_2(SS_PIN_2, RST_PIN_2);  // Create MFRC522 instance
@@ -45,9 +46,9 @@ int count = 0;
 
 bool IS_CHILD_IN_KITCHEN = false;
 bool IS_CHILD_IN_BATHROOM = false;
-
 bool IS_PARENT_IN_KITCHEN = false;
 bool IS_PARENT_IN_BATHROOM = false;
+
 
 
 /* ****************** WINDOW SHADE PART ******************************** */
@@ -60,12 +61,12 @@ volatile bool toggle = true; // true -> to close // false -> to open
 void setup() {
   Serial.begin(9600);
   pinMode(lightPIN,OUTPUT);
-  pinMode(RED,OUTPUT);
-  pinMode(BLUE,OUTPUT);
-  pinMode(WRITE,OUTPUT);
 
   pinMode(vibrator,OUTPUT);
-  pinMode(ledPin,OUTPUT);
+  pinMode(ledPinBed,OUTPUT);
+  pinMode(ledPinLiv,OUTPUT);
+  pinMode(ledPinKit,OUTPUT);
+  pinMode(ledPinBath,OUTPUT);
   pinMode(buzzer,OUTPUT);
   pinMode(TouchPin, INPUT);
 
@@ -76,7 +77,8 @@ void setup() {
 //  attachInterrupt(digitalPinToInterrupt(receiver), manualButtonController, RISING);
 //  attachInterrupt(digitalPinToInterrupt(receiver), lightSensorMode, RISING);
   //attachInterrupt(0,translateIR,CHANGE);
-  stepper.setSpeed(15);
+  
+  //stepper.setSpeed(15);
 /* ********************************************************************** */
 
   while (!Serial);    // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
@@ -102,24 +104,25 @@ void loop() {
     {
         if(IS_PARENT_IN_KITCHEN == true)
         {
-            //buzzerLEDActivate();
-            digitalWrite(RED,HIGH);
+            KitchenBuzzerLEDActivate();
+            Serial.println("Parent is in the kitchen");
         }
         else if(IS_PARENT_IN_BATHROOM == true)
         {
-            //buzzerLEDActivate();
-            //lcd.setRGB(255,255,255);
-            digitalWrite(BLUE,HIGH);
+            BathroomBuzzerLEDActivate();
+            lcd.setRGB(255,255,255);
+            Serial.println("Parent is in the bathroom");
         }
         else // PARENT IN THE BED ROOM
         {
-//            if(digitalRead(TouchPin) == 1) 
-//            {
-//              Serial.println("In Bed -> Vibrate, buzzer, LED");
-//              Serial.println();
-//              vibrateBuzzerLEDActivate(); 
-//            }
-            digitalWrite(BLUE,HIGH);
+            if(digitalRead(TouchPin) == 1) 
+            {
+              Serial.println("In Bed -> Vibrate, buzzer, LED");
+              Serial.println();
+              vibrateBuzzerLEDActivate(); 
+            }
+            LivingBuzzerLEDActivate();
+            Serial.println("Parent is in the bedroom or living room");
         } 
         pressedNumber = 0;
     }
@@ -168,10 +171,11 @@ void translateIR() {// takes action based on IR code received
     case 16753245:
       pressedNumber = 1;
       Serial.println("Button_1 - Child Calling!!");
-      lcd.begin(16, 2);  
-      lcd.setCursor(0, 0);// Print a message to the lcd.
-      lcd.print("Child is Calling! ");
-      lcd.setRGB(254,0,0);
+//      lcd.begin(16, 2);  
+//      lcd.setCursor(0, 0);// Print a message to the lcd.
+//      lcd.print("Child is Calling!");
+//      lcd.setRGB(254,0,0);
+      
       break;
 //    case 16736925:
 //        Serial.println("Button_2 - Light ON/OFF");
@@ -190,7 +194,7 @@ void translateIR() {// takes action based on IR code received
         lcd.setCursor(1, 0);// Print a message to the lcd.
         lcd.print("Manual Mode Window");
         lcd.setRGB(66,244,104);
-        manualButtonController();
+        //manualButtonController();
         break;
       case 16720605:
         Serial.println("4");
@@ -199,7 +203,7 @@ void translateIR() {// takes action based on IR code received
         lcd.setCursor(0, 0);// Print a message to the lcd.
         lcd.print("Auto Mode Window");
         lcd.setRGB(176,66,244);
-        lightSensorMode();
+        //lightSensorMode();
         break;
 //      case 16712445:
 //        Serial.println("5");
@@ -244,12 +248,19 @@ void translateIR() {// takes action based on IR code received
   delay(50); // Do not get immediate repeat
 }
 
+
+
+
+
+
+
 void checkLocation(){
-   /* **************************RFID 1 ***************************** */
-        Serial.print("UID tag :");
-        String content= "";
-        byte letter;
-        for (byte i = 0; i < mfrc522.uid.size; i++)
+
+   /* ******************************CODE FOR  RFID AT KITCHEN STARTS***************************************** */ 
+      if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()){
+         String content= "";
+          Serial.println("This is Kitchen");
+          for (byte i = 0; i < mfrc522.uid.size; i++)
         {
            Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
            Serial.print(mfrc522.uid.uidByte[i], HEX);
@@ -259,11 +270,8 @@ void checkLocation(){
         Serial.println();
         Serial.print("Message : ");
         content.toUpperCase();
-
-   /* ****************************** RFID AT KITCHEN ***************************************** */ 
-      if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()){
-    
-          if (content.substring(1) == "06 D4 37 07") //Child
+        
+          if (content.substring(1) == "65 AF A6 43") //Child
           { 
               Serial.println("Child");
               IS_CHILD_IN_KITCHEN = !IS_CHILD_IN_KITCHEN; // true when a child walk in the kitchen
@@ -273,7 +281,9 @@ void checkLocation(){
                 Serial.println("CHILD IS IN THE KITCHEN NOW");
                 lcd.begin(16, 2);  
                 lcd.setCursor(0, 0);// Print a message to the lcd.
-                lcd.print("CHILD IS IN THE KITCHEN NOW!!");
+                lcd.print("CHILD IS IN ");
+                lcd.setCursor(0, 1);// Print a message to the lcd.
+                lcd.print("THE KITCHEN");
                 lcd.setRGB(254,0,0);
               }
               else if (IS_CHILD_IN_KITCHEN == false)
@@ -281,12 +291,14 @@ void checkLocation(){
                 Serial.println("CHILD IS NOT IN THE KITCHEN NOW");
                 lcd.begin(16, 2);  
                 lcd.setCursor(0, 0);// Print a message to the lcd.
-                lcd.print("CHILD IS NOT IN THE KITCHEN NOW!!");
+                lcd.print("CHILD IS NOT IN ");
+                lcd.setCursor(0, 1);// Print a message to the lcd.
+                lcd.print("THE KITCHEN");
                 lcd.setRGB(254,0,0);
               } 
               delay(1000);
           }
-            
+       
           else if (content.substring(1) == "D1 96 AF 85") // Parent 
           {
             Serial.println("Parent"); 
@@ -297,7 +309,9 @@ void checkLocation(){
                 Serial.println("PARENT IS IN THE KITCHEN NOW");
                 lcd.begin(16, 2);  
                 lcd.setCursor(0, 0);// Print a message to the lcd.
-                lcd.print("PARENT IS IN THE KITCHEN NOW!!");
+                lcd.print("PARENT IS IN THE");
+                 lcd.setCursor(0, 1);// Print a message to the lcd.
+                lcd.print("KITCHEN NOW");
                 lcd.setRGB(254,0,0);
               }
               else if (IS_PARENT_IN_KITCHEN == false)
@@ -305,18 +319,24 @@ void checkLocation(){
                 Serial.println("PARENT IS NOT IN THE KITCHEN NOW");
                 lcd.begin(16, 2);  
                 lcd.setCursor(0, 0);// Print a message to the lcd.
-                lcd.print("PARENT IS NOT IN THE KITCHEN NOW!!");
+                lcd.print("PARENT IS NOT");
+                 lcd.setCursor(0, 1);// Print a message to the lcd.
+                lcd.print("IN KITCHEN");
                 lcd.setRGB(254,0,0);
               } 
             delay(1000);
           }
       }
-      
-    /* ***************************** RFID 2 ************************************* */
-        Serial.print("UID tag :");
+    /********************************CODE FOR RFID KITCHEN ENDS *******************/ 
+
+        
+        
+    
+   /* ****************************** CODE FOR RFID2 AT BATHROOM BEGINS******************************** */
+       if (mfrc522_2.PICC_IsNewCardPresent() && mfrc522_2.PICC_ReadCardSerial()){
         String content2= "";
-        byte letter2;
-        for (byte i = 0; i < mfrc522_2.uid.size; i++)
+          Serial.println("This is Bathroom");
+          for (byte i = 0; i < mfrc522_2.uid.size; i++)
         {
            Serial.print(mfrc522_2.uid.uidByte[i] < 0x10 ? " 0" : " ");
            Serial.print(mfrc522_2.uid.uidByte[i], HEX);
@@ -326,10 +346,8 @@ void checkLocation(){
         Serial.println();
         Serial.print("Message : ");
         content2.toUpperCase();
-    
-   /* ****************************** RFID AT BATHROOM ******************************** */
-       if (mfrc522_2.PICC_IsNewCardPresent() && mfrc522_2.PICC_ReadCardSerial()){
-          if (content2.substring(1) == "06 D4 37 07") //Child
+        
+          if (content2.substring(1) == "65 AF A6 43") //Child
           {
             Serial.println("Child");
             IS_CHILD_IN_BATHROOM = !IS_CHILD_IN_BATHROOM;
@@ -339,17 +357,21 @@ void checkLocation(){
               Serial.println("CHILD IS IN THE BATHROOM NOW");
               lcd.begin(16, 2);  
               lcd.setCursor(0, 0);// Print a message to the lcd.
-              lcd.print("CHILD IS IN THE BATHROOM NOW!!!");
+              lcd.print("CHILD IS IN THE");
+              lcd.setCursor(0, 1);// Print a message to the lcd.
+              lcd.print("BATHROOM");
               lcd.setRGB(254,0,0);
             }
             else if (IS_CHILD_IN_BATHROOM == false){
               Serial.println("CHILD IS NOT IN THE BATHROOM NOW");
               lcd.begin(16, 2);  
               lcd.setCursor(0, 0);// Print a message to the lcd.
-              lcd.print("CHILD IS NOT IN THE BATHROOM NOW!!!");
+              lcd.print("CHILD IS NOT IN");
+              lcd.setCursor(0, 1);// Print a message to the lcd.
+              lcd.print("THE BATHROOM");
               lcd.setRGB(254,0,0);
             }
-            delay(500);
+            delay(1000);
           }
           
           else if (content2.substring(1) == "D1 96 AF 85") //Parent
@@ -358,79 +380,110 @@ void checkLocation(){
               IS_PARENT_IN_BATHROOM = !IS_PARENT_IN_BATHROOM;
               if (IS_PARENT_IN_BATHROOM == true)
               {
-                Serial.println("CHILD IS IN THE BATHROOM NOW");
+                Serial.println("PARENT IS IN THE BATHROOM NOW");
                 lcd.begin(16, 2);  
                 lcd.setCursor(0, 0);// Print a message to the lcd.
-                lcd.print("CHILD IS IN THE BATHROOM NOW!!!");
+                lcd.print("PARENT IS IN THE");
+                lcd.setCursor(0, 1);// Print a message to the lcd.
+                lcd.print("BATHROOM");
                 lcd.setRGB(254,0,0);
               }
               else if (IS_PARENT_IN_BATHROOM == false){
                 Serial.println("PARENT IS NOT IN THE BATHROOM NOW");
                 lcd.begin(16, 2);  
                 lcd.setCursor(0, 0);// Print a message to the lcd.
-                lcd.print("PARENT IS NOT IN THE BATHROOM NOW!!!");
+                lcd.print("PARENT IS NOT IN");
+                lcd.setCursor(0, 1);// Print a message to the lcd.
+                lcd.print("THE BATHROOM");
                 lcd.setRGB(254,0,0);
               }
               delay(1000);
            }    
         }
+
+      /*********************** CODE FOR RFID2 AT BATHROOM ENDS*******************/  
 }
 
 
-void buzzerLEDActivate() {
+void LivingBuzzerLEDActivate() {
   Serial.println("Not in Bed -> buzzer, LED");
   digitalWrite(buzzer,HIGH);
-  digitalWrite(ledPin,HIGH);
-  delay(1000);
+  digitalWrite(ledPinBed,HIGH);
+  digitalWrite(ledPinLiv,HIGH);
+  delay(3000);
   digitalWrite(buzzer,LOW);
-  digitalWrite(ledPin,LOW);
+  digitalWrite(ledPinBed,LOW);
+  digitalWrite(ledPinLiv,LOW);
+  delay(1000);
+}
+
+void KitchenBuzzerLEDActivate() {
+  Serial.println("Not in Bed -> buzzer, LED");
+  digitalWrite(buzzer,HIGH);
+  digitalWrite(ledPinLiv,HIGH);
+  digitalWrite(ledPinKit,HIGH);
+  delay(3000);
+  digitalWrite(buzzer,LOW);
+  digitalWrite(ledPinLiv,LOW);
+  digitalWrite(ledPinKit,LOW);
+  delay(1000);
+}
+void BathroomBuzzerLEDActivate() {
+  Serial.println("Not in Bed -> buzzer, LED");
+  digitalWrite(buzzer,HIGH);
+  digitalWrite(ledPinLiv,HIGH);
+  digitalWrite(ledPinBath,HIGH);
+  delay(3000);
+  digitalWrite(buzzer,LOW);
+  digitalWrite(ledPinLiv,LOW);
+  digitalWrite(ledPinBath,LOW);
   delay(1000);
 }
 
 void vibrateBuzzerLEDActivate() {
-  digitalWrite(ledPin,HIGH);
+  digitalWrite(ledPinBed,HIGH);
   digitalWrite(vibrator,HIGH);
   digitalWrite(buzzer,HIGH);
-  delay(1000);
-  digitalWrite(ledPin,LOW);
+  delay(3000);
+  digitalWrite(ledPinBed,LOW);
   digitalWrite(vibrator,LOW);
   digitalWrite(buzzer,LOW);
   delay(1000);
 }
 
-/* ***************** WINDOW SHADE PART ************************************************* */
-void lightSensorMode(){
-    mode = 0;
-}
-void manualButtonController(){
-    mode = 1; // change to manual mode
-    toggle = !toggle;
-}
-void open_shade(){
-    digitalWrite(LED_PIN,HIGH);
-    while(numberOfStep < 3000){
-        stepper.step(1);
-        numberOfStep++;       
-        if( (mode == 1 && toggle == true) || (mode == 0 && analogRead(LIGHT_SENSOR) > thresholdvalue) ){
-           break;
-        }
-    }
-    digitalWrite(LED_PIN,LOW);
-    windowState = 1; // 
-}
-
-void close_shade(){
-    digitalWrite(LED_PIN,HIGH);
-    while(numberOfStep > 0){
-        stepper.step(-1);
-        numberOfStep--;
-         if( (mode == 1 && toggle == false) || (mode == 0 && analogRead(LIGHT_SENSOR) < thresholdvalue)){
-           break;
-        }
-    }
-    digitalWrite(LED_PIN,LOW);
-    windowState = 0;
-}
+///* ***************** WINDOW SHADE PART ************************************************* */
+//void lightSensorMode(){
+//    mode = 0;
+//}
+//void manualButtonController(){
+//    mode = 1; // change to manual mode
+//    toggle = !toggle;
+//}
+//void open_shade(){
+//    digitalWrite(LED_PIN,HIGH);
+//    while(numberOfStep < 3000){
+//        stepper.step(1);
+//        numberOfStep++;       
+//        if( (mode == 1 && toggle == true) || (mode == 0 && analogRead(LIGHT_SENSOR) > thresholdvalue) ){
+//           break;
+//        }
+//    }
+//    digitalWrite(LED_PIN,LOW);
+//    windowState = 1; // 
+//}
+//
+//void close_shade(){
+//    digitalWrite(LED_PIN,HIGH);
+//    while(numberOfStep > 0){
+//        stepper.step(-1);
+//        numberOfStep--;
+//         if( (mode == 1 && toggle == false) || (mode == 0 && analogRead(LIGHT_SENSOR) < thresholdvalue)){
+//           break;
+//        }
+//    }
+//    digitalWrite(LED_PIN,LOW);
+//    windowState = 0;
+//}
 /*********************************************************************************************************
 
   END FILE
