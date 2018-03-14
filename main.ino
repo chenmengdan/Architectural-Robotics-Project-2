@@ -9,9 +9,9 @@
 #define TouchPin 8 //                           [8]
 
 #define ledPinBed 30
-#define ledPinLiv 31 
+#define ledPinLiv 33 
 #define ledPinKit 32 
-#define ledPinBath 33 
+#define ledPinBath 31 
 
 #define vibrator 9
 #define buzzer 5
@@ -41,7 +41,7 @@ decode_results results;
 
 int pressedNumber = 0;
 int count = 0;
-
+bool lightPinIsOn = false; 
 
 
 bool IS_CHILD_IN_KITCHEN = false;
@@ -163,17 +163,21 @@ void translateIR() {// takes action based on IR code received
     case 16753245:
       pressedNumber = 1;
       Serial.println("Button_1 - Child Calling!!");
-//      lcd.begin(16, 2);  
-//      lcd.setCursor(0, 0);// Print a message to the lcd.
-//      lcd.print("Child is Calling!");
-//      lcd.setRGB(254,0,0);
-      
+      lcd.begin(16, 2);  
+      lcd.setCursor(0, 0);// Print a message to the lcd.
+      lcd.print("Child is Calling!");
+      lcd.setRGB(254,0,0);
       break;
-//    case 16736925:
-//        Serial.println("Button_2 - Light ON/OFF");
-//        pressedNumber = 2;
-//        digitalWrite(lightPIN,LOW);
-//        break;
+    case 16736925:
+        Serial.println("Button_2 - Light ON/OFF");
+        pressedNumber = 2;
+        lightPinIsOn = !lightPinIsOn;
+        if(lightPinIsOn == true){
+          digitalWrite(lightPIN,HIGH);
+        }else{
+          digitalWrite(lightPIN,LOW);
+        }
+        break;
     case 16726215:
       Serial.println("Button_OK - Off the calling symbol");
       lcd.clear();
@@ -182,20 +186,12 @@ void translateIR() {// takes action based on IR code received
       case 16769565:
         Serial.println("3");
         pressedNumber = 3;
-        lcd.begin(16, 2);  
-        lcd.setCursor(1, 0);// Print a message to the lcd.
-        lcd.print("Manual Mode Window");
-        lcd.setRGB(66,244,104);
         mode = 1; // change to manual mode
         toggle = !toggle;
         break;
       case 16720605:
         Serial.println("4");
         pressedNumber = 4;
-        lcd.begin(16, 2);  
-        lcd.setCursor(0, 0);// Print a message to the lcd.
-        lcd.print("Auto Mode Window");
-        lcd.setRGB(176,66,244);
         mode = 0;
         break;
 //      case 16712445:
