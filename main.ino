@@ -24,7 +24,7 @@
 #define LIGHT_SENSOR A0                 //Grove - Light Sensor is connected to A0 of Arduino
 #define STEPS 2038
 Stepper stepper(STEPS,38,40,39,41);  
-const int thresholdvalue = 120;         //The treshold for which the LED should turn on. Setting it lower will make it go on at more light, higher for more darkness
+const int thresholdvalue = 170;         //The treshold for which the LED should turn on. Setting it lower will make it go on at more light, higher for more darkness
 /* ********************************************************************** */
 
 rgb_lcd lcd;
@@ -87,6 +87,12 @@ void setup() {
 }
 
 void loop() {
+    lcd.begin(16, 2);  
+    lcd.setCursor(0, 0);// Print a message to the lcd.
+    lcd.print("CHILD IS IN ");
+    lcd.setCursor(0, 1);// Print a message to the lcd.
+    lcd.print("THE BEDROOM");
+    
     if (irrecv.decode(&results)) {// have we received an IR signal?
       translateIR();
       irrecv.resume();//receive the next value
@@ -138,6 +144,7 @@ void loop() {
           }
         }
        else{ // mode = 0 -> using light sensor
+          Serial.println(analogRead(LIGHT_SENSOR));
           if(mode == 0 && analogRead(LIGHT_SENSOR) < thresholdvalue && windowState == 0 )// no light -> open window
           { 
              Serial.println("open!!!!!!!!!!!!!!!!!!");
@@ -163,10 +170,10 @@ void translateIR() {// takes action based on IR code received
     case 16753245:
       pressedNumber = 1;
       Serial.println("Button_1 - Child Calling!!");
-      lcd.begin(16, 2);  
-      lcd.setCursor(0, 0);// Print a message to the lcd.
-      lcd.print("Child is Calling!");
-      lcd.setRGB(254,0,0);
+//      lcd.begin(16, 2);  
+//      lcd.setCursor(0, 0);// Print a message to the lcd.
+//      lcd.print("Child is Calling!");
+//      lcd.setRGB(254,0,0);
       break;
     case 16736925:
         Serial.println("Button_2 - Light ON/OFF");
@@ -396,48 +403,60 @@ void checkLocation(){
 
 void LivingBuzzerLEDActivate() {
   Serial.println("Not in Bed -> buzzer, LED");
+  int count;
   digitalWrite(buzzer,HIGH);
-  digitalWrite(ledPinBed,HIGH);
-  digitalWrite(ledPinLiv,HIGH);
-  delay(3000);
+  for( count = 0; count < 10; count++){
+    digitalWrite(ledPinBed,HIGH);
+    digitalWrite(ledPinLiv,HIGH);
+    delay(1000);
+    digitalWrite(ledPinBed,LOW);
+    digitalWrite(ledPinLiv,LOW);
+    delay(400);
+  }
   digitalWrite(buzzer,LOW);
-  digitalWrite(ledPinBed,LOW);
-  digitalWrite(ledPinLiv,LOW);
-  delay(1000);
 }
 
 void KitchenBuzzerLEDActivate() {
   Serial.println("Not in Bed -> buzzer, LED");
+  int count;
   digitalWrite(buzzer,HIGH);
-  digitalWrite(ledPinLiv,HIGH);
-  digitalWrite(ledPinKit,HIGH);
-  delay(3000);
+  for( count = 0; count < 10; count++){
+    digitalWrite(ledPinLiv,HIGH);
+    digitalWrite(ledPinKit,HIGH);
+    delay(1000);
+    digitalWrite(ledPinLiv,LOW);
+    digitalWrite(ledPinKit,LOW);
+    delay(400);
+  }
   digitalWrite(buzzer,LOW);
-  digitalWrite(ledPinLiv,LOW);
-  digitalWrite(ledPinKit,LOW);
-  delay(1000);
 }
 void BathroomBuzzerLEDActivate() {
   Serial.println("Not in Bed -> buzzer, LED");
+  int count;
   digitalWrite(buzzer,HIGH);
-  digitalWrite(ledPinLiv,HIGH);
-  digitalWrite(ledPinBath,HIGH);
-  delay(3000);
+  for( count = 0; count < 10; count++){
+    digitalWrite(ledPinLiv,HIGH);
+    digitalWrite(ledPinBath,HIGH);
+    delay(1000);
+    digitalWrite(ledPinLiv,LOW);
+    digitalWrite(ledPinBath,LOW);
+    delay(400);
+  }
   digitalWrite(buzzer,LOW);
-  digitalWrite(ledPinLiv,LOW);
-  digitalWrite(ledPinBath,LOW);
-  delay(1000);
 }
 
 void vibrateBuzzerLEDActivate() {
-  digitalWrite(ledPinBed,HIGH);
-  digitalWrite(vibrator,HIGH);
+  int count;
   digitalWrite(buzzer,HIGH);
-  delay(3000);
-  digitalWrite(ledPinBed,LOW);
-  digitalWrite(vibrator,LOW);
+  for( count = 0; count < 10; count++){
+    digitalWrite(ledPinBed,HIGH);
+    digitalWrite(vibrator,HIGH);
+    delay(1000);
+    digitalWrite(ledPinBed,LOW);
+    digitalWrite(vibrator,LOW);
+    delay(400);
+  }
   digitalWrite(buzzer,LOW);
-  delay(1000);
 }
 
 ///* ***************** WINDOW SHADE PART ************************************************* */
