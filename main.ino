@@ -38,18 +38,13 @@ MFRC522 mfrc522_2(SS_PIN_2, RST_PIN_2);  // Create MFRC522 instance
 IRrecv irrecv(receiver);
 decode_results results;
 
-
 int pressedNumber = 0;
 int count = 0;
 bool lightPinIsOn = false; 
-
-
 bool IS_CHILD_IN_KITCHEN = false;
 bool IS_CHILD_IN_BATHROOM = false;
 bool IS_PARENT_IN_KITCHEN = false;
 bool IS_PARENT_IN_BATHROOM = false;
-
-
 
 /* ****************** WINDOW SHADE PART ******************************** */
 int numberOfStep = 0;
@@ -58,10 +53,10 @@ int windowState = 1; // window state 0 -> closed // window state 1 -> open
 bool toggle = true; // true -> to close // false -> to open 
 /* ********************************************************************** */
 
+
 void setup() {
   Serial.begin(9600);
   pinMode(lightPIN,OUTPUT);
-
   pinMode(vibrator,OUTPUT);
   pinMode(ledPinBed,OUTPUT);
   pinMode(ledPinLiv,OUTPUT);
@@ -85,6 +80,7 @@ void setup() {
   Serial.println();
   irrecv.enableIRIn();//Start the receiver
 }
+
 
 void loop() {
     lcd.begin(16, 2);  
@@ -170,10 +166,6 @@ void translateIR() {// takes action based on IR code received
     case 16753245:
       pressedNumber = 1;
       Serial.println("Button_1 - Child Calling!!");
-//      lcd.begin(16, 2);  
-//      lcd.setCursor(0, 0);// Print a message to the lcd.
-//      lcd.print("Child is Calling!");
-//      lcd.setRGB(254,0,0);
       break;
     case 16736925:
         Serial.println("Button_2 - Light ON/OFF");
@@ -201,52 +193,10 @@ void translateIR() {// takes action based on IR code received
         pressedNumber = 4;
         mode = 0;
         break;
-//      case 16712445:
-//        Serial.println("5");
-//        pressedNumber = 5;    
-//        break;
-//      case 16761405:
-//        Serial.println("6");
-//        pressedNumber = 6;   
-//        break;
-//      case 16769055:
-//        Serial.println("7");
-//        pressedNumber = 7;   
-//        break;
-//      case 16754775:
-//        Serial.println("8");
-//        pressedNumber = 8;   
-//        break;
-//      case 16748655:
-//        Serial.println("9");
-//        pressedNumber = 9;   
-//        break;
-//      case 16750695:
-//        Serial.println("0");  
-//        break;
-//       default:
-//        Serial.println("  other button   ");
-//      case 16718055:
-//        Serial.println(" FORWARD"); break;
-//      case 16716015:
-//        Serial.println(" LEFT");    break;
 
-//      case 16734885:
-//        Serial.println(" RIGHT");   break;
-//      case 16730805:
-//        Serial.println(" REVERSE"); break;
-//        Serial.println(" *");    break;
-//      case 16756815:
-//        Serial.println(" #");    break;
-//      case 0xFFFFFFFF:
-//        Serial.println(" REPEAT"); break;
     }// End Case
   delay(50); // Do not get immediate repeat
 }
-
-
-
-
 
 
 
